@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::Rng;
 
 use crate::{
     housing::{HousingType, HousingVacancy},
@@ -18,7 +19,14 @@ impl Plugin for CityPlugin {
                 1.,
                 TimerMode::Repeating,
             )))
-            .add_systems(Update, show_city_population_counter);
+            .insert_resource(MovingInPopulationTimer(Timer::from_seconds(
+                1.,
+                TimerMode::Repeating,
+            )))
+            .add_systems(
+                Update,
+                (show_city_population_counter, move_population_into_city),
+            );
     }
 }
 
@@ -39,7 +47,7 @@ pub fn show_city_population_counter(
 fn move_population_into_city(
     mut timer: ResMut<MovingInPopulationTimer>,
     time: Res<Time>,
-    population_query: Query<&mut Population, With<City>>,
+    mut population_query: Query<&mut Population, With<City>>,
     housing_query: Query<(&HousingType, &HousingVacancy)>,
 ) {
     tick!(timer, time);
@@ -48,10 +56,12 @@ fn move_population_into_city(
         .filter(|(_, housing_vacancy)| **housing_vacancy == HousingVacancy::Vacant)
         .collect::<Vec<_>>()
         .len();
+    let mut rng = rand::thread_rng();
+    let y: f64 = rng.gen::<f64>() * (25. - 10.) + 10.;
     
-    
-    let new_population = vacant_housing_amount as f32 / 20.;
-
+    let amount_of_new_population: u64 = (vacant_housing_amount as f64 / y).ceil() as u64;
+    let mut population = population_query.single_mut();
+    population.0 += amount_of_new_population;
 }
 
 #[derive(Resource)]
