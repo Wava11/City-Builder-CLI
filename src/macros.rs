@@ -6,3 +6,16 @@ macro_rules! tick {
         }
     };
 }
+
+#[macro_export]
+macro_rules! foo {
+    ( $name:ident{$($field_name:ident: $field_type:ty),*} ) => {
+        #[derive(Bundle)]
+        struct concat_idents!($name,Bundle) {
+            $(
+                $field_name: $field_type,
+            )*
+        }
+    };
+}
+

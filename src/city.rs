@@ -3,7 +3,7 @@ use rand::Rng;
 
 use crate::{
     housing::{HousingType, HousingVacancy},
-    population::Population,
+    population::{generate_population, Population},
     tick,
 };
 
@@ -51,17 +51,16 @@ fn move_population_into_city(
     housing_query: Query<(&HousingType, &HousingVacancy)>,
 ) {
     tick!(timer, time);
-    let vacant_housing_amount = housing_query
-        .iter()
-        .filter(|(_, housing_vacancy)| **housing_vacancy == HousingVacancy::Vacant)
-        .collect::<Vec<_>>()
-        .len();
+    let vacant_housing_amount = generate_population(housing_query
+        .iter());
+        
     let mut rng = rand::thread_rng();
     let y: f64 = rng.gen::<f64>() * (25. - 10.) + 10.;
-    
+
     let amount_of_new_population: u64 = (vacant_housing_amount as f64 / y).ceil() as u64;
     let mut population = population_query.single_mut();
     population.0 += amount_of_new_population;
+
 }
 
 #[derive(Resource)]

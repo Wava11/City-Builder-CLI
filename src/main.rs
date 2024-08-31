@@ -12,3 +12,4 @@ fn main() {
         .add_plugins((DefaultPlugins, CityPlugin, HousingPlugin))
         .run();
 }
+
