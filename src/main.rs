@@ -6,10 +6,10 @@ mod macros;
 mod city;
 mod housing;
 mod population;
+mod statistics;
 
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, CityPlugin, HousingPlugin))
         .run();
 }
-

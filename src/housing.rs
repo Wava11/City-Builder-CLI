@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use crate::foo;
-
 pub struct HousingPlugin;
 
 impl Plugin for HousingPlugin {
@@ -15,7 +13,7 @@ pub fn spawn_housing(mut commands: Commands) {
         commands.spawn(HousingBundle {
             housingType: HousingType::Apartment,
             housingVacancy: HousingVacancy::Vacant,
-            housingCapacity: HousingCapacity(5)
+            housingCapacity: HousingCapacity(5),
         });
     }
 }
@@ -41,3 +39,17 @@ pub enum HousingType {
 
 #[derive(Component, PartialEq, Eq)]
 pub struct HousingCapacity(u32);
+
+pub type Housing<'a> = (&'a HousingType, &'a mut HousingVacancy, &'a HousingCapacity);
+
+pub fn get_housing_type<'a>(housing: &Housing<'a>) -> &'a HousingType {
+    housing.0
+}
+
+pub fn get_housing_vacancy<'a>(housing: &'a mut Housing<'a>) -> &'a mut HousingVacancy {
+    housing.1
+}
+
+pub fn get_housing_capacity<'a>(housing: &Housing<'a>) -> u32 {
+    housing.2.0
+}
