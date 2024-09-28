@@ -1,6 +1,7 @@
 use rand::distributions::{Distribution, WeightedIndex};
 use rand::rngs::ThreadRng;
 
+use super::couple::*;
 use crate::housing::{get_housing_capacity, get_housing_type, HousingType};
 use crate::population::ScoreHousing;
 use crate::{
@@ -32,22 +33,19 @@ impl ScoreHousing for Family {
 
 pub struct FamilyDistribution {
     rng: ThreadRng,
-    num_of_parents_distribution: WeightedIndex<u8>,
     num_of_children_distribution: WeightedIndex<u8>,
-    parents_distribution: Box<dyn Sample<CitizenBundle>>,
+    parents_distribution: Box<dyn Sample<Couple>>,
     children_distribution: Box<dyn Sample<CitizenBundle>>,
 }
 impl FamilyDistribution {
     // TODO: make parents similar to each other and also children
     fn new(
-        num_of_parents_weights: Vec<u8>,
         num_of_children_weights: Vec<u8>,
-        parents_distribution: Box<dyn Sample<CitizenBundle>>,
+        parents_distribution: Box<dyn Sample<Couple>>,
         children_distribution: Box<dyn Sample<CitizenBundle>>,
     ) -> Self {
         Self {
             rng: rand::thread_rng(),
-            num_of_parents_distribution: WeightedIndex::new(num_of_parents_weights).unwrap(),
             num_of_children_distribution: WeightedIndex::new(num_of_children_weights).unwrap(),
             parents_distribution,
             children_distribution,
@@ -58,11 +56,11 @@ impl Sample<Box<Family>> for FamilyDistribution {
     fn sample(&mut self, amount: u64) -> Vec<Box<Family>> {
         (0..amount)
             .map(|_| {
-                let num_of_parents = self.num_of_parents_distribution.sample(&mut self.rng) as u64;
+                let parents_couple = self.parents_distribution.sample(1).remove(0);
                 let num_of_children =
                     self.num_of_children_distribution.sample(&mut self.rng) as u64;
                 Box::new(Family {
-                    parents: self.parents_distribution.sample(num_of_parents),
+                    parents: parents_couple.to_citizens_bundles(),
                     children: self.children_distribution.sample(num_of_children),
                 })
             })

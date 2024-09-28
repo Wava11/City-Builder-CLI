@@ -6,7 +6,7 @@ use crate::{
     statistics::{Sample, SampleBasedOn},
 };
 
-struct Couple {
+pub struct Couple {
     members: [CitizenBundle; 2],
 }
 impl ToCitizensBundles for Couple {
@@ -46,21 +46,27 @@ impl CoupleDistribution {
         }
     }
 }
-impl Sample<Box<dyn ScoreHousingAndToCitizensBundles>> for CoupleDistribution {
-    fn sample(&mut self, amount: u64) -> Vec<Box<dyn ScoreHousingAndToCitizensBundles>> {
+impl Sample<Couple> for CoupleDistribution {
+    fn sample(&mut self, amount: u64) -> Vec<Couple> {
         (0..amount)
             .map(|_| {
-                let first_member = self
-                    .members_distribution
-                    .sample(1)
-                    .into_iter()
-                    .next()
-                    .unwrap();
+                let first_member = self.members_distribution.sample(1).remove(1);
                 let second_member = self.parter_distribution.sample_based_on(&first_member);
-                let couple : Box<dyn ScoreHousingAndToCitizensBundles> = Box::new(Couple {
+                Couple {
                     members: [first_member, second_member],
-                });
-                couple
+                }
+            })
+            .collect()
+    }
+}
+impl Sample<Box<dyn ScoreHousingAndToCitizensBundles>> for CoupleDistribution {
+    fn sample(&mut self, amount: u64) -> Vec<Box<dyn ScoreHousingAndToCitizensBundles>> {
+        let couples: Vec<Couple> = self.sample(amount);
+        couples
+            .into_iter()
+            .map(|c| {
+                let b: Box<dyn ScoreHousingAndToCitizensBundles> = Box::new(c);
+                b
             })
             .collect()
     }
