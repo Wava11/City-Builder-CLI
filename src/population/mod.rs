@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+use rand::Rng;
 
-mod distributions;
+pub mod distributions;
 mod groups;
 
 use crate::{
@@ -21,15 +22,15 @@ pub enum AgeGroup {
 }
 
 #[derive(Component, Clone)]
-pub struct Age(u8);
+pub struct Age(f32);
 impl Age {
     fn to_age_group(&self) -> AgeGroup {
         match self.0 {
-            ..=3 => AgeGroup::toddler,
-            4..=13 => AgeGroup::child,
-            14..=18 => AgeGroup::teen,
-            19..=25 => AgeGroup::young_adult,
-            26..=60 => AgeGroup::adult,
+            ..=3. => AgeGroup::toddler,
+            4.0..=13. => AgeGroup::child,
+            14.0..=18. => AgeGroup::teen,
+            19.0..=25. => AgeGroup::young_adult,
+            26.0..=60. => AgeGroup::adult,
             _ => AgeGroup::elderly
         }
     }
@@ -96,7 +97,8 @@ fn inject_most_interested_population<'a>(
 
 const HOUSING_TO_POPULATION_FACTOR: f64 = 4.;
 
-struct PopulationDistribution {
+
+pub struct PopulationDistribution {
     distributions: Vec<(
         Box<dyn Sample<Box<dyn ScoreHousingAndToCitizensBundles>>>,
         f64,

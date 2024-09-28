@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use rand::Rng;
 
 use crate::{
-    housing::{HousingType, HousingVacancy},
-    population::{move_new_population_in, Population},
+    housing::{Housing, HousingCapacity, HousingType, HousingVacancy},
+    population::{distributions, move_new_population_in, Population},
     tick,
 };
 
@@ -25,7 +25,7 @@ impl Plugin for CityPlugin {
             )))
             .add_systems(
                 Update,
-                (show_city_population_counter, move_population_into_city),
+                (move_population_into_city),
             );
     }
 }
@@ -48,22 +48,25 @@ fn move_population_into_city(
     mut timer: ResMut<MovingInPopulationTimer>,
     time: Res<Time>,
     mut population_query: Query<&mut Population, With<City>>,
-    housing_query: Query<(&HousingType, &HousingVacancy)>,
+    mut housing_query: Query<(&HousingType, &mut HousingVacancy, &HousingCapacity)>,
 ) {
     tick!(timer, time);
 
-    move_new_population_in(housing_query.iter(), population_distribution);
+    let new_citizen_bundle = move_new_population_in(
+        housing_query.iter_mut(),
+        &mut distributions::create_world_population(),
+    );
 
-    let vacant_housing_amount = generate_population(housing_query
-        .iter());
-        
-    let mut rng = rand::thread_rng();
-    let y: f64 = rng.gen::<f64>() * (25. - 10.) + 10.;
+    // let vacant_housing_amount = generate_population(housing_query.iter());
 
-    let amount_of_new_population: u64 = (vacant_housing_amount as f64 / y).ceil() as u64;
+    // let mut rng = rand::thread_rng();
+    // let y: f64 = rng.gen::<f64>() * (25. - 10.) + 10.;
+
+    // let amount_of_new_population: u64 = (vacant_housing_amount as f64 / y).ceil() as u64;
+    let amount_of_new_population: u64 = new_citizen_bundle.len() as u64;
+
     let mut population = population_query.single_mut();
     population.0 += amount_of_new_population;
-
 }
 
 #[derive(Resource)]

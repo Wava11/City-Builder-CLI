@@ -1,4 +1,10 @@
-use crate::{housing::{get_housing_capacity, get_housing_type, Housing, HousingType}, population::{CitizenBundle, ScoreHousing, ToCitizensBundles}, statistics::{Sample, SampleBasedOn}};
+use crate::{
+    housing::{get_housing_capacity, get_housing_type, Housing, HousingType},
+    population::{
+        CitizenBundle, ScoreHousing, ScoreHousingAndToCitizensBundles, ToCitizensBundles,
+    },
+    statistics::{Sample, SampleBasedOn},
+};
 
 struct Couple {
     members: [CitizenBundle; 2],
@@ -13,28 +19,20 @@ impl ScoreHousing for Couple {
     fn score_housing<'a>(&self, housing: &Housing<'a>) -> u16 {
         if get_housing_capacity(housing) < 2 {
             return 0;
-        } 
+        }
         match get_housing_type(housing) {
             HousingType::SingleFamilyHome => u16::MAX,
-            HousingType::Apartment => u16::MAX/2,
+            HousingType::Apartment => u16::MAX / 2,
         }
     }
 }
 
 pub struct CoupleDistribution {
-    // rng: ThreadRng,
-    // min_age: u8,
-    // max_age: u8,
-    // age_distribution: Normal<f32>,
     members_distribution: Box<dyn Sample<CitizenBundle>>,
     parter_distribution: Box<dyn SampleBasedOn<CitizenBundle>>,
 }
 impl CoupleDistribution {
-    fn new(
-        // min_age: u8,
-        // max_age: u8,
-        // mean_age: f32,
-        // std_age: f32,
+    pub fn new(
         members_distribution: Box<dyn Sample<CitizenBundle>>,
         parter_distribution: Box<dyn SampleBasedOn<CitizenBundle>>,
     ) -> Self {
@@ -48,8 +46,8 @@ impl CoupleDistribution {
         }
     }
 }
-impl Sample<Couple> for CoupleDistribution {
-    fn sample(&mut self, amount: u64) -> Vec<Couple> {
+impl Sample<Box<dyn ScoreHousingAndToCitizensBundles>> for CoupleDistribution {
+    fn sample(&mut self, amount: u64) -> Vec<Box<dyn ScoreHousingAndToCitizensBundles>> {
         (0..amount)
             .map(|_| {
                 let first_member = self
@@ -59,10 +57,13 @@ impl Sample<Couple> for CoupleDistribution {
                     .next()
                     .unwrap();
                 let second_member = self.parter_distribution.sample_based_on(&first_member);
-                Couple {
+                let couple : Box<dyn ScoreHousingAndToCitizensBundles> = Box::new(Couple {
                     members: [first_member, second_member],
-                }
+                });
+                couple
             })
             .collect()
     }
 }
+
+impl ScoreHousingAndToCitizensBundles for Couple {}

@@ -1,9 +1,12 @@
+use rand::distributions::{Distribution, WeightedIndex};
 use rand::rngs::ThreadRng;
-use rand::distributions::{WeightedIndex, Distribution};
 
 use crate::housing::{get_housing_capacity, get_housing_type, HousingType};
 use crate::population::ScoreHousing;
-use crate::{population::{CitizenBundle, ToCitizensBundles}, statistics::Sample};
+use crate::{
+    population::{CitizenBundle, ToCitizensBundles},
+    statistics::Sample,
+};
 
 struct Family {
     parents: Vec<CitizenBundle>,
@@ -22,7 +25,7 @@ impl ScoreHousing for Family {
         }
         match get_housing_type(housing) {
             HousingType::SingleFamilyHome => u16::MAX,
-            HousingType::Apartment => u16::MAX/2,
+            HousingType::Apartment => u16::MAX / 2,
         }
     }
 }
@@ -51,17 +54,17 @@ impl FamilyDistribution {
         }
     }
 }
-impl Sample<Family> for FamilyDistribution {
-    fn sample(&mut self, amount: u64) -> Vec<Family> {
+impl Sample<Box<Family>> for FamilyDistribution {
+    fn sample(&mut self, amount: u64) -> Vec<Box<Family>> {
         (0..amount)
             .map(|_| {
                 let num_of_parents = self.num_of_parents_distribution.sample(&mut self.rng) as u64;
                 let num_of_children =
                     self.num_of_children_distribution.sample(&mut self.rng) as u64;
-                Family {
+                Box::new(Family {
                     parents: self.parents_distribution.sample(num_of_parents),
                     children: self.children_distribution.sample(num_of_children),
-                }
+                })
             })
             .collect()
     }
