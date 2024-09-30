@@ -1,38 +1,29 @@
 use rand_distr::Normal;
 
-use crate::population::groups::couple::CoupleDistribution;
+use super::super::couple::{CoupleMembersDistribution, CoupleParterDistribution};
+use super::ChildrenDistribution;
+use crate::population::groups::{couple::CoupleDistribution, family::FamilyDistribution};
 
-use super::{CoupleMembersDistribution, CoupleParterDistribution};
-
-pub fn create_world_young_couple_distribution() -> Box<CoupleDistribution> {
-    Box::new(CoupleDistribution::new(
-        Box::new(CoupleMembersDistribution {
+pub fn create_world_family_distribution() -> Box<FamilyDistribution> {
+    Box::new(FamilyDistribution::new(
+        vec![10, 20, 20, 30, 10, 5, 1, 0],
+        Box::new(CoupleDistribution::new(
+            Box::new(CoupleMembersDistribution {
+                rng: rand::thread_rng(),
+                min_age: 18.,
+                max_age: 120.,
+                age_distribution: Normal::new(28., 5.).unwrap(),
+            }),
+            Box::new(CoupleParterDistribution {
+                rng: rand::thread_rng(),
+                min_age: 18.,
+                max_age: 120.,
+                age_factor_distribution: Normal::new(1., 0.1).unwrap(),
+            }),
+        )),
+        Box::new(ChildrenDistribution {
             rng: rand::thread_rng(),
-            min_age: 18.,
-            max_age: 120.,
-            age_distribution: Normal::new(28., 5.).unwrap(),
-        }),
-        Box::new(CoupleParterDistribution {
-            rng: rand::thread_rng(),
-            min_age: 18.,
-            max_age: 120.,
-            age_factor_distribution: Normal::new(1., 0.1).unwrap(),
-        }),
-    ))
-}
-pub fn create_world_elderly_couple_distribution() -> Box<CoupleDistribution> {
-    Box::new(CoupleDistribution::new(
-        Box::new(CoupleMembersDistribution {
-            rng: rand::thread_rng(),
-            min_age: 45.,
-            max_age: 120.,
-            age_distribution: Normal::new(65., 10.).unwrap(),
-        }),
-        Box::new(CoupleParterDistribution {
-            rng: rand::thread_rng(),
-            min_age: 40.,
-            max_age: 120.,
-            age_factor_distribution: Normal::new(1., 0.05).unwrap(),
+            child_age_distance_from_parent_distribution: Normal::new(28., 5.).unwrap(),
         }),
     ))
 }

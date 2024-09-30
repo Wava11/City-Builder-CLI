@@ -5,6 +5,7 @@ use tui::TerminalUIPlugin;
 
 mod city;
 mod housing;
+mod map;
 mod macros;
 mod population;
 mod statistics;

@@ -1,15 +1,18 @@
 use rand::rngs::ThreadRng;
 use rand_distr::{Distribution, Normal};
 
-use crate::{population::{Age, CitizenBundle}, statistics::{Sample, SampleBasedOn}};
+use crate::{
+    population::{Age, CitizenBundle},
+    statistics::{Sample, SampleBasedOn},
+};
 
 pub mod world;
 
-struct CoupleMembersDistribution {
-    rng: ThreadRng,
-    min_age: f32,
-    max_age: f32,
-    age_distribution: Normal<f32>,
+pub struct CoupleMembersDistribution {
+    pub rng: ThreadRng,
+    pub min_age: f32,
+    pub max_age: f32,
+    pub age_distribution: Normal<f32>,
 }
 impl Sample<CitizenBundle> for CoupleMembersDistribution {
     fn sample(&mut self, amount: u64) -> Vec<CitizenBundle> {
@@ -25,18 +28,22 @@ impl Sample<CitizenBundle> for CoupleMembersDistribution {
     }
 }
 
-struct CoupleParterDistribution {
-    rng: ThreadRng,
-    min_age: f32,
-    max_age: f32,
-    age_factor_distribution: Normal<f32>,
+pub struct CoupleParterDistribution {
+    pub rng: ThreadRng,
+    pub min_age: f32,
+    pub max_age: f32,
+    pub age_factor_distribution: Normal<f32>,
 }
-impl SampleBasedOn<CitizenBundle> for CoupleParterDistribution {
-    fn sample_based_on(&mut self, t: &CitizenBundle) -> CitizenBundle {
-        let age_factor = self.age_factor_distribution.sample(&mut self.rng);
-        let unclamped_age = age_factor * t.age.0;
-        CitizenBundle {
-            age: Age(unclamped_age.clamp(self.min_age, self.max_age)),
-        }
+impl SampleBasedOn<CitizenBundle, CitizenBundle> for CoupleParterDistribution {
+    fn sample_based_on(&mut self, t: &CitizenBundle, amount: u64) -> Vec<CitizenBundle> {
+        (0..amount)
+            .map(|_| {
+                let age_factor = self.age_factor_distribution.sample(&mut self.rng);
+                let unclamped_age = age_factor * t.age.0;
+                CitizenBundle {
+                    age: Age(unclamped_age.clamp(self.min_age, self.max_age)),
+                }
+            })
+            .collect()
     }
 }

@@ -7,7 +7,7 @@ use crate::{
 };
 
 pub struct Couple {
-    members: [CitizenBundle; 2],
+    pub members: [CitizenBundle; 2],
 }
 impl ToCitizensBundles for Couple {
     fn to_citizens_bundles(&self) -> Vec<CitizenBundle> {
@@ -29,12 +29,12 @@ impl ScoreHousing for Couple {
 
 pub struct CoupleDistribution {
     members_distribution: Box<dyn Sample<CitizenBundle>>,
-    parter_distribution: Box<dyn SampleBasedOn<CitizenBundle>>,
+    parter_distribution: Box<dyn SampleBasedOn<CitizenBundle, CitizenBundle>>,
 }
 impl CoupleDistribution {
     pub fn new(
         members_distribution: Box<dyn Sample<CitizenBundle>>,
-        parter_distribution: Box<dyn SampleBasedOn<CitizenBundle>>,
+        parter_distribution: Box<dyn SampleBasedOn<CitizenBundle, CitizenBundle>>,
     ) -> Self {
         Self {
             // rng: rand::thread_rng(),
@@ -50,8 +50,11 @@ impl Sample<Couple> for CoupleDistribution {
     fn sample(&mut self, amount: u64) -> Vec<Couple> {
         (0..amount)
             .map(|_| {
-                let first_member = self.members_distribution.sample(1).remove(1);
-                let second_member = self.parter_distribution.sample_based_on(&first_member);
+                let first_member = self.members_distribution.sample(1).remove(0);
+                let second_member = self
+                    .parter_distribution
+                    .sample_based_on(&first_member, 1)
+                    .remove(0);
                 Couple {
                     members: [first_member, second_member],
                 }
