@@ -1,23 +1,17 @@
 use bevy::prelude::*;
-use ratatui::prelude::*;
 use ratatui::widgets::Paragraph;
 
-fn hello() {
-    let x = Paragraph::new("Hello");
-}
-
+#[derive(Clone, Copy)]
 pub enum TerrainType {
     Ground,
     Water,
-    Building,
 }
 
 impl TerrainType {
-    pub fn to_chr(&self) -> char {
+    pub fn to_char(&self) -> char {
         match self {
             Self::Ground => '.',
             Self::Water => '*',
-            Self::Building => '#',
         }
     }
 }

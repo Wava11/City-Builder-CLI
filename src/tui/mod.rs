@@ -5,6 +5,9 @@ use crossterm::event;
 use ratatui::{style::Stylize, widgets};
 
 use crate::{city::City, population::Population};
+
+mod map;
+
 pub struct TerminalUIPlugin;
 
 impl Plugin for TerminalUIPlugin {
@@ -16,6 +19,7 @@ impl Plugin for TerminalUIPlugin {
 
 #[derive(Resource)]
 struct Terminal(ratatui::DefaultTerminal);
+
 
 fn init_terminal(mut commands: Commands) {
     let mut terminal = ratatui::init();

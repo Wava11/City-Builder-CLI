@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
+use crate::geometry::Point;
+
 #[derive(Component)]
-pub struct Position {
-    x: u64,
-    y: u64,
-}
+pub struct Position(pub Point);
 
 #[derive(Component)]
 enum Area {

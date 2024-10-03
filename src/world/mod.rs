@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use terrain::TerrainType;
 
-mod terrain;
+use crate::geometry::Point;
+
+pub mod structure;
+pub mod terrain;
 
 pub struct WorldPlugin;
 
@@ -20,7 +23,7 @@ fn spawn_camera(mut commands: Commands) {
 fn spawn_map(mut commands: Commands) {
     let initial_map = WorldMap {
         map: [[MapTile {
-            terrain: '.',
+            terrain: TerrainType::Ground,
             entity: None,
         }; WORLD_WIDTH]; WORLD_HEIGHT],
     };
@@ -32,46 +35,52 @@ const WORLD_WIDTH: usize = 1000;
 
 #[derive(Clone, Copy)]
 struct MapTile {
-    terrain: char,
-    entity: Option<Entity>,
+    pub terrain: TerrainType,
+    pub entity: Option<Entity>,
 }
 
 #[derive(Component)]
-struct WorldMap {
-    map: [[MapTile; WORLD_WIDTH]; WORLD_HEIGHT],
+pub struct WorldMap {
+    pub map: [[MapTile; WORLD_WIDTH]; WORLD_HEIGHT],
 }
 
-struct Point {
-    x: usize,
-    y: usize,
-}
+#[derive(Component)]
+struct Position(Point);
 
 //for now only set the top left and what the camera can view will be detemined by the size of the
 //screen
 #[derive(Component)]
-struct Camera {
-    top_left: Point,
+pub struct Camera {
+    pub top_left: Point,
 }
 
-struct Rectangle {
-    top_left: Point,
-    bottom_right: Point,
-    terrain: TerrainType,
+#[derive(Component)]
+pub struct Area {
+    pub width: usize,
+    pub height: usize,
 }
 
-impl ObjectOnMap for Rectangle {
-    fn place_on_map(&self, self_entity: Entity, map: &mut WorldMap) {
-        for y in self.top_left.y..self.bottom_right.y {
-            for x in self.top_left.x..self.bottom_right.x {
-                map.map[x][y] = MapTile {
-                    terrain: self.terrain.to_chr(),
-                    entity: Some(self_entity),
-                }
-            }
-        }
-    }
-}
+// impl ObjectOnMap for Area {
+//     fn place_on_map(&self, self_entity: Entity, map: &mut WorldMap) {
+//         for y in self.top_left.y..self.bottom_right.y {
+//             for x in self.top_left.x..self.bottom_right.x {
+//                 map.map[x][y] = MapTile {
+//                     terrain: self.terrain,
+//                     entity: Some(self_entity),
+//                 }
+//             }
+//         }
+//     }
+// }
 
 trait ObjectOnMap {
     fn place_on_map(&self, self_entity: Entity, map: &mut WorldMap);
+}
+
+#[derive(Component)]
+pub enum Rotation {
+    Right,
+    Up,
+    Left,
+    Down,
 }

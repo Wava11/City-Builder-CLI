@@ -12,6 +12,7 @@ mod world;
 mod population;
 mod statistics;
 mod tui;
+mod geometry;
 
 fn main() {
     App::new()
