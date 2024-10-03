@@ -2,11 +2,13 @@ use bevy::prelude::*;
 use city::CityPlugin;
 use housing::HousingPlugin;
 use tui::TerminalUIPlugin;
+use world::WorldPlugin;
 
 mod city;
 mod housing;
 mod map;
 mod macros;
+mod world;
 mod population;
 mod statistics;
 mod tui;
@@ -22,6 +24,7 @@ fn main() {
             CityPlugin,
             HousingPlugin,
             TerminalUIPlugin,
+            WorldPlugin,
         ))
         .run();
 }

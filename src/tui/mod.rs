@@ -1,9 +1,6 @@
 use std::time::Duration;
 
-use bevy::{
-    input::{keyboard::KeyboardInput, ButtonState},
-    prelude::*,
-};
+use bevy::prelude::*;
 use crossterm::event;
 use ratatui::{style::Stylize, widgets};
 
@@ -31,6 +28,14 @@ fn update_terminal(mut terminal: ResMut<Terminal>, query: Query<&Population, Wit
     terminal
         .0
         .draw(|frame| {
+            let top_bar = Block::default().title("Top bar").borders(Borders::ALL);
+            f.render_widget(top_bar, size);
+
+            // Render the "Hello" text in the app bar
+            let paragraph = Paragraph::new("Hello").block(top_bar);
+            f.render_widget(paragraph, size);
+
+            let x = frame.size();
             let greeting = widgets::Paragraph::new(format!("Population: {population}!")).white();
             // .on_blue();
             frame.render_widget(greeting, frame.area());

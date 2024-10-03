@@ -11,18 +11,18 @@ impl Plugin for HousingPlugin {
 pub fn spawn_housing(mut commands: Commands) {
     for _ in 0..100 {
         commands.spawn(HousingBundle {
-            housingType: HousingType::Apartment,
-            housingVacancy: HousingVacancy::Vacant,
-            housingCapacity: HousingCapacity(5),
+            housing_type: HousingType::Apartment,
+            housing_vacancy: HousingVacancy::Vacant,
+            housing_capacity: HousingCapacity(5),
         });
     }
 }
 
 #[derive(Bundle)]
 pub struct HousingBundle {
-    housingVacancy: HousingVacancy,
-    housingType: HousingType,
-    housingCapacity: HousingCapacity,
+    housing_vacancy: HousingVacancy,
+    housing_type: HousingType,
+    housing_capacity: HousingCapacity,
 }
 
 #[derive(Component, PartialEq, Eq)]
