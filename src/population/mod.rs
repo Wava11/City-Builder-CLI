@@ -13,12 +13,12 @@ use crate::{
 pub struct Population(pub u64);
 
 pub enum AgeGroup {
-    toddler,
-    child,
-    teen,
-    young_adult,
-    adult,
-    elderly,
+    Toddler,
+    Child,
+    Teen,
+    YoungAdult,
+    Adult,
+    Elderly,
 }
 
 #[derive(Component, Clone)]
@@ -26,12 +26,12 @@ pub struct Age(f32);
 impl Age {
     fn to_age_group(&self) -> AgeGroup {
         match self.0 {
-            ..=3. => AgeGroup::toddler,
-            4.0..=13. => AgeGroup::child,
-            14.0..=18. => AgeGroup::teen,
-            19.0..=25. => AgeGroup::young_adult,
-            26.0..=60. => AgeGroup::adult,
-            _ => AgeGroup::elderly
+            ..=3. => AgeGroup::Toddler,
+            4.0..=13. => AgeGroup::Child,
+            14.0..=18. => AgeGroup::Teen,
+            19.0..=25. => AgeGroup::YoungAdult,
+            26.0..=60. => AgeGroup::Adult,
+            _ => AgeGroup::Elderly
         }
     }
 }

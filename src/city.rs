@@ -1,8 +1,7 @@
 use bevy::prelude::*;
-use rand::Rng;
 
 use crate::{
-    housing::{Housing, HousingCapacity, HousingType, HousingVacancy},
+    housing::{HousingCapacity, HousingType, HousingVacancy},
     population::{distributions, move_new_population_in, Population},
     tick,
 };
@@ -25,7 +24,7 @@ impl Plugin for CityPlugin {
             )))
             .add_systems(
                 Update,
-                (move_population_into_city),
+                move_population_into_city,
             );
     }
 }

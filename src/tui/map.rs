@@ -3,8 +3,7 @@ use crate::{
     world::Camera,
 };
 use bevy::prelude::*;
-use crossterm::terminal;
-use ratatui::widgets::Widget;
+use ratatui::{buffer::Buffer, widgets::WidgetRef};
 
 use crate::{
     map::Position,
@@ -19,11 +18,12 @@ use super::Terminal;
 #[derive(Component)]
 pub struct MapView(Vec<Vec<char>>);
 
-impl Widget for MapView {
-    fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer) {
-        for i in 0..area.height() {
+impl WidgetRef for &MapView {
+    fn render_ref(&self, area: ratatui::layout::Rect, buf: &mut Buffer) {
+        for i in 0..area.height {
             //this might crash if the area ratatui asks for is larger that what was rendered
-            let line = ratatui::prelude::Line::from(self.0[i]);
+            let line_text: String = self.0[i as usize].iter().collect();
+            let line = ratatui::prelude::Line::from(line_text);
             buf.set_line(area.x, area.y + i, &line, area.width);
         }
     }
@@ -34,8 +34,8 @@ pub fn create_map_view_sprite(
     map_query: Query<&WorldMap>,
     entities_query: Query<(&Structure, &Area, &Rotation, &Position)>,
     camera_query: Query<&Camera>,
-    map_view_query: Query<&mut MapView>,
-    commands: Commands,
+    mut map_view_query: Query<&mut MapView>,
+    mut commands: Commands,
 ) {
     let camera = camera_query.single();
     let terminal_size = terminal.0.size().unwrap();
@@ -47,11 +47,11 @@ pub fn create_map_view_sprite(
 
     let map = map_query.single();
 
-    let mut map_view_sprite: Vec<Vec<char>> = (0..terminal_size.width)
-        .map(|x| {
-            (0..terminal_size.height)
-                .map(|y| {
-                    map.map[camera.top_left.x + x as usize][camera.top_left.y + y as usize]
+    let mut map_view_sprite: Vec<Vec<char>> = (0..terminal_size.height)
+        .map(|y| {
+            (0..terminal_size.width)
+                .map(|x| {
+                    map.map[camera.top_left.y + y as usize][camera.top_left.x + x as usize]
                         .terrain
                         .to_char()
                 })
@@ -75,20 +75,24 @@ pub fn create_map_view_sprite(
         }
 
         let sprite = structure.to_sprite(area, rotation);
-        for (x, sprite_column) in sprite.iter().enumerate() {
-            for (y, sprite_cell) in sprite_column.iter().enumerate() {
+        for (y, sprite_row) in sprite.iter().enumerate() {
+            for (x, sprite_cell) in sprite_row.iter().enumerate() {
                 if rectangle_contains_point(&camera.top_left, &camera_bottom_right, &Point { x, y })
                 {
-                    map_view_sprite[entity_top_left.0.x + x - camera.top_left.x]
-                        [entity_top_left.0.y + y - camera.top_left.y] = *sprite_cell;
+                    map_view_sprite[entity_top_left.0.y + y - camera.top_left.y]
+                        [entity_top_left.0.x + x - camera.top_left.x] = *sprite_cell;
                 }
             }
         }
     }
 
     match map_view_query.get_single_mut() {
-        Ok(map_view_entity) => map_view_entity.0 = map_view_sprite,
-        Err(_) => commands.spawn(MapView(map_view_sprite)),
+        Ok(mut map_view_entity) => {
+            map_view_entity.0 = map_view_sprite;
+        }
+        Err(_) => {
+            commands.spawn(MapView(map_view_sprite));
+        }
     };
 }
 

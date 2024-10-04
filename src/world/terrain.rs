@@ -1,6 +1,3 @@
-use bevy::prelude::*;
-use ratatui::widgets::Paragraph;
-
 #[derive(Clone, Copy)]
 pub enum TerrainType {
     Ground,

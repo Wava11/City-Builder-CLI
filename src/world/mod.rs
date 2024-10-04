@@ -10,7 +10,7 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_map);
+        app.add_systems(Startup, (spawn_map, spawn_camera));
     }
 }
 
@@ -21,27 +21,30 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn spawn_map(mut commands: Commands) {
+    println!("Before");
     let initial_map = WorldMap {
-        map: [[MapTile {
-            terrain: TerrainType::Ground,
-            entity: None,
-        }; WORLD_WIDTH]; WORLD_HEIGHT],
+        map: Box::new(
+            [[MapTile {
+                terrain: TerrainType::Ground,
+                entity: None,
+            }; WORLD_WIDTH]; WORLD_HEIGHT],
+        ),
     };
     commands.spawn(initial_map);
 }
 
-const WORLD_HEIGHT: usize = 1000;
-const WORLD_WIDTH: usize = 1000;
+const WORLD_HEIGHT: usize = 120;
+const WORLD_WIDTH: usize = 120;
 
 #[derive(Clone, Copy)]
-struct MapTile {
+pub struct MapTile {
     pub terrain: TerrainType,
     pub entity: Option<Entity>,
 }
 
 #[derive(Component)]
 pub struct WorldMap {
-    pub map: [[MapTile; WORLD_WIDTH]; WORLD_HEIGHT],
+    pub map: Box<[[MapTile; WORLD_WIDTH]; WORLD_HEIGHT]>,
 }
 
 #[derive(Component)]

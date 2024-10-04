@@ -3,7 +3,10 @@ use std::time::Duration;
 use bevy::prelude::*;
 use crossterm::event;
 use map::{create_map_view_sprite, MapView};
-use ratatui::{style::Stylize, widgets};
+use ratatui::{
+    layout::{Constraint, Layout},
+    widgets::{Block, Borders, Paragraph},
+};
 
 use crate::{city::City, population::Population};
 
@@ -31,7 +34,7 @@ fn init_terminal(mut commands: Commands) {
 fn update_terminal(
     mut terminal: ResMut<Terminal>,
     population_query: Query<&Population, With<City>>,
-    map_view_query: Query<MapView>,
+    map_view_query: Query<&MapView>,
 ) {
     let Population(population) = population_query.single();
     let map_view = map_view_query.single();
@@ -39,7 +42,7 @@ fn update_terminal(
         .0
         .draw(|frame| {
             let layout = Layout::default()
-                .direction(Direction::Vertical)
+                .direction(ratatui::layout::Direction::Vertical)
                 .constraints(vec![Constraint::Percentage(10), Constraint::Percentage(90)])
                 .split(frame.area());
 
@@ -49,14 +52,12 @@ fn update_terminal(
                 layout[0],
             );
 
-            frame.render_widget(MapView)
+            frame.render_widget_ref(map_view, layout[1]);
         })
         .unwrap();
 }
 
-fn exit_on_q(
-    mut writer: EventWriter<bevy::app::AppExit>,
-) {
+fn exit_on_q(mut writer: EventWriter<bevy::app::AppExit>) {
     if event::poll(Duration::from_secs(0)).unwrap() {
         if let event::Event::Key(key) = event::read().unwrap() {
             if key.kind == event::KeyEventKind::Press && key.code == event::KeyCode::Char('q') {
@@ -65,4 +66,3 @@ fn exit_on_q(
         }
     }
 }
-
