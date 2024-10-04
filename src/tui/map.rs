@@ -4,6 +4,7 @@ use crate::{
 };
 use bevy::prelude::*;
 use crossterm::terminal;
+use ratatui::widgets::Widget;
 
 use crate::{
     map::Position,
@@ -15,11 +16,26 @@ use crate::{
 
 use super::Terminal;
 
+#[derive(Component)]
+pub struct MapView(Vec<Vec<char>>);
+
+impl Widget for MapView {
+    fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer) {
+        for i in 0..area.height() {
+            //this might crash if the area ratatui asks for is larger that what was rendered
+            let line = ratatui::prelude::Line::from(self.0[i]);
+            buf.set_line(area.x, area.y + i, &line, area.width);
+        }
+    }
+}
+
 pub fn create_map_view_sprite(
     terminal: Res<Terminal>,
     map_query: Query<&WorldMap>,
     entities_query: Query<(&Structure, &Area, &Rotation, &Position)>,
     camera_query: Query<&Camera>,
+    map_view_query: Query<&mut MapView>,
+    commands: Commands,
 ) {
     let camera = camera_query.single();
     let terminal_size = terminal.0.size().unwrap();
@@ -70,7 +86,10 @@ pub fn create_map_view_sprite(
         }
     }
 
-    
+    match map_view_query.get_single_mut() {
+        Ok(map_view_entity) => map_view_entity.0 = map_view_sprite,
+        Err(_) => commands.spawn(MapView(map_view_sprite)),
+    };
 }
 
 impl Structure {

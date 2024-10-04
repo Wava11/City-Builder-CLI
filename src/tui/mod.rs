@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::*;
 use crossterm::event;
+use map::{create_map_view_sprite, MapView};
 use ratatui::{style::Stylize, widgets};
 
 use crate::{city::City, population::Population};
@@ -13,6 +14,7 @@ pub struct TerminalUIPlugin;
 impl Plugin for TerminalUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, init_terminal)
+            .add_systems(PreUpdate, create_map_view_sprite)
             .add_systems(Update, (update_terminal, exit_on_q));
     }
 }
@@ -20,36 +22,39 @@ impl Plugin for TerminalUIPlugin {
 #[derive(Resource)]
 struct Terminal(ratatui::DefaultTerminal);
 
-
 fn init_terminal(mut commands: Commands) {
     let mut terminal = ratatui::init();
     terminal.clear().expect("could not clear terminal");
     commands.insert_resource(Terminal(terminal));
 }
 
-fn update_terminal(mut terminal: ResMut<Terminal>, query: Query<&Population, With<City>>) {
-    let Population(population) = query.single();
+fn update_terminal(
+    mut terminal: ResMut<Terminal>,
+    population_query: Query<&Population, With<City>>,
+    map_view_query: Query<MapView>,
+) {
+    let Population(population) = population_query.single();
+    let map_view = map_view_query.single();
     terminal
         .0
         .draw(|frame| {
-            let top_bar = Block::default().title("Top bar").borders(Borders::ALL);
-            f.render_widget(top_bar, size);
+            let layout = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints(vec![Constraint::Percentage(10), Constraint::Percentage(90)])
+                .split(frame.area());
 
-            // Render the "Hello" text in the app bar
-            let paragraph = Paragraph::new("Hello").block(top_bar);
-            f.render_widget(paragraph, size);
+            frame.render_widget(
+                Paragraph::new(format!("Population: {population}"))
+                    .block(Block::new().borders(Borders::ALL)),
+                layout[0],
+            );
 
-            let x = frame.size();
-            let greeting = widgets::Paragraph::new(format!("Population: {population}!")).white();
-            // .on_blue();
-            frame.render_widget(greeting, frame.area());
+            frame.render_widget(MapView)
         })
         .unwrap();
 }
 
 fn exit_on_q(
-    // keys: Res<ButtonInput<KeyCode>>,
-    // mut app_exit_events: ResMut<Events<bevy::app::AppExit>>,
     mut writer: EventWriter<bevy::app::AppExit>,
 ) {
     if event::poll(Duration::from_secs(0)).unwrap() {
@@ -60,3 +65,4 @@ fn exit_on_q(
         }
     }
 }
+
