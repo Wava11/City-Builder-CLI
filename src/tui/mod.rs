@@ -1,29 +1,36 @@
-use std::time::Duration;
+use std::io::stdout;
 
 use bevy::prelude::*;
-use crossterm::event;
+use crossterm::{cursor::SetCursorStyle, ExecutableCommand};
+use cursor::{Cursor, CursorPlugin};
+use input::{InputPlugin, KeysPressed};
 use map::{create_map_view_sprite, MapView};
 use ratatui::{
     layout::{Constraint, Layout},
     widgets::{Block, Borders, Paragraph},
 };
 
-use crate::{city::City, population::Population};
+use crate::{
+    app::OneShotSystems, city::City, map::Position, population::Population
+};
 
+mod cursor;
+mod input;
 mod map;
 
 pub struct TerminalUIPlugin;
 
 impl Plugin for TerminalUIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, init_terminal)
+        app.add_plugins(( InputPlugin, CursorPlugin ))
+            .add_systems(PreStartup, init_terminal)
             .add_systems(PreUpdate, create_map_view_sprite)
             .add_systems(Update, (update_terminal, exit_on_q));
     }
 }
 
 #[derive(Resource)]
-struct Terminal(ratatui::DefaultTerminal);
+pub struct Terminal(pub ratatui::DefaultTerminal);
 
 fn init_terminal(mut commands: Commands) {
     let mut terminal = ratatui::init();
@@ -35,9 +42,13 @@ fn update_terminal(
     mut terminal: ResMut<Terminal>,
     population_query: Query<&Population, With<City>>,
     map_view_query: Query<&MapView>,
+    cursor_query: Query<&Position, With<Cursor>>,
 ) {
     let Population(population) = population_query.single();
     let map_view = map_view_query.single();
+    let cursor_position = cursor_query.single();
+    let mut stdout = stdout();
+    let _ = stdout.execute(SetCursorStyle::SteadyBlock);
     terminal
         .0
         .draw(|frame| {
@@ -52,17 +63,21 @@ fn update_terminal(
                 layout[0],
             );
 
-            frame.render_widget_ref(map_view, layout[1]);
+            let map_area = layout[1];
+            let absolute_cursor_position =
+                cursor_position.clone() + Position::new(map_area.x, map_area.y);
+            frame.render_widget_ref(map_view, map_area);
+            frame.set_cursor_position(absolute_cursor_position);
         })
         .unwrap();
 }
 
-fn exit_on_q(mut writer: EventWriter<bevy::app::AppExit>) {
-    if event::poll(Duration::from_secs(0)).unwrap() {
-        if let event::Event::Key(key) = event::read().unwrap() {
-            if key.kind == event::KeyEventKind::Press && key.code == event::KeyCode::Char('q') {
-                writer.send(bevy::app::AppExit);
-            }
-        }
+fn exit_on_q(
+    one_shot_systems: Res<OneShotSystems>,
+    mut commands: Commands,
+    keys_pressed: Res<KeysPressed>
+) {
+    if keys_pressed.was_char_pressed('q') {
+        commands.run_system(one_shot_systems.exit_game);
     }
 }

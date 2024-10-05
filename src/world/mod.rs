@@ -21,7 +21,6 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 fn spawn_map(mut commands: Commands) {
-    println!("Before");
     let initial_map = WorldMap {
         map: Box::new(
             [[MapTile {

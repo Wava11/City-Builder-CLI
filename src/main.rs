@@ -1,3 +1,4 @@
+use app::AppPlugin;
 use bevy::prelude::*;
 use city::CityPlugin;
 use housing::HousingPlugin;
@@ -13,6 +14,7 @@ mod population;
 mod statistics;
 mod tui;
 mod geometry;
+mod app;
 
 fn main() {
     App::new()
@@ -22,6 +24,7 @@ fn main() {
                 exit_condition: bevy::window::ExitCondition::DontExit,
                 close_when_requested: false,
             }),
+            AppPlugin,
             CityPlugin,
             HousingPlugin,
             TerminalUIPlugin,

@@ -1,3 +1,5 @@
+use std::ops::{Add, AddAssign};
+
 pub fn rectangles_intersect(
     top_left1: &Point,
     bottom_right1: &Point,
@@ -17,7 +19,38 @@ pub fn rectangle_contains_point(top_left: &Point, bottom_right: &Point, point: &
         && point.y <= bottom_right.y
 }
 
+#[derive(Clone)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
+}
+
+impl Point {
+    pub fn move_x(&mut self, x: isize) {
+        let new_x = self.x.saturating_add_signed(x);
+        self.x = new_x;
+    }
+
+    pub fn move_y(&mut self, y: isize) {
+        let new_y = self.y.saturating_add_signed(y);
+        self.y = new_y;
+    }
+}
+
+impl Add<Point> for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl AddAssign for Point {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
 }
