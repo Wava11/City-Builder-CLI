@@ -1,7 +1,7 @@
 use std::io::stdout;
 
 use bevy::prelude::*;
-use crossterm::{cursor::SetCursorStyle, ExecutableCommand};
+use crossterm::{cursor::SetCursorStyle, terminal::{Clear, ClearType}, ExecutableCommand};
 use cursor::{Cursor, CursorPlugin};
 use input::{InputPlugin, KeysPressed};
 use map::{create_map_view_sprite, MapView};
@@ -40,11 +40,11 @@ fn update_terminal(
     mut terminal: ResMut<Terminal>,
     population_query: Query<&Population, With<City>>,
     map_view_query: Query<&MapView>,
-    cursor_query: Query<(&Position, &Rotation), With<Cursor>>,
+    cursor_query: Query<&Position, With<Cursor>>,
 ) {
     let Population(population) = population_query.single();
     let map_view = map_view_query.single();
-    let (cursor_position, cursor_rotation) = cursor_query.single();
+    let cursor_position = cursor_query.single();
     let mut stdout = stdout();
     let _ = stdout.execute(SetCursorStyle::SteadyBlock);
     terminal

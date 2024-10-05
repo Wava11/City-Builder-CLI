@@ -1,5 +1,5 @@
 use app::AppPlugin;
-use bevy::prelude::*;
+use bevy::{log::LogPlugin, prelude::*};
 use city::CityPlugin;
 use housing::HousingPlugin;
 use tui::TerminalUIPlugin;
@@ -23,7 +23,7 @@ fn main() {
                 primary_window: None,
                 exit_condition: bevy::window::ExitCondition::DontExit,
                 close_when_requested: false,
-            }),
+            }).disable::<LogPlugin>(),
             AppPlugin,
             CityPlugin,
             HousingPlugin,

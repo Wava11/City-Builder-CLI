@@ -26,14 +26,12 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn move_x(&mut self, x: isize) {
-        let new_x = self.x.saturating_add_signed(x);
-        self.x = new_x;
+    pub fn move_x(&mut self, dx: isize) {
+        self.x = self.x.saturating_add_signed(dx);
     }
 
-    pub fn move_y(&mut self, y: isize) {
-        let new_y = self.y.saturating_add_signed(y);
-        self.y = new_y;
+    pub fn move_y(&mut self, dy: isize) {
+        self.y = self.y.saturating_add_signed(dy);
     }
 }
 

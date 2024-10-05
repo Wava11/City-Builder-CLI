@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use crossterm::event;
 
 use crate::{
     geometry::Point,
@@ -44,16 +45,20 @@ fn move_cursor(
 ) {
     //TODO: make it so cursor can't go out of bounds of map
     let mut cursor_position = cursor_position_query.single_mut();
-    if keys_pressed.was_char_pressed('l') {
+    if keys_pressed.was_char_pressed('l')
+        || keys_pressed.was_key_code_pressed(event::KeyCode::Right)
+    {
         cursor_position.0.move_x(1);
     }
-    if keys_pressed.was_char_pressed('h') {
+    if keys_pressed.was_char_pressed('h') || keys_pressed.was_key_code_pressed(event::KeyCode::Left)
+    {
         cursor_position.0.move_x(-1);
     }
-    if keys_pressed.was_char_pressed('j') {
+    if keys_pressed.was_char_pressed('j') || keys_pressed.was_key_code_pressed(event::KeyCode::Down) {
         cursor_position.0.move_y(1);
     }
-    if keys_pressed.was_char_pressed('k') {
+    if keys_pressed.was_char_pressed('k') || keys_pressed.was_key_code_pressed(event::KeyCode::Up)
+    {
         cursor_position.0.move_y(-1);
     }
 }

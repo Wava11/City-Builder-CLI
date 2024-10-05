@@ -17,7 +17,11 @@ pub struct KeysPressed(pub Vec<crossterm::event::KeyCode>);
 
 impl KeysPressed {
     pub fn was_char_pressed(&self, char: char) -> bool {
-        self.0.contains(&event::KeyCode::Char(char))
+        self.was_key_code_pressed(event::KeyCode::Char(char))
+    }
+
+    pub fn was_key_code_pressed(&self, code: event::KeyCode) -> bool {
+        self.0.contains(&code)
     }
 }
 

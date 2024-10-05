@@ -24,18 +24,22 @@ fn spawn_camera(mut commands: Commands) {
 
 fn spawn_map(mut commands: Commands) {
     let initial_map = WorldMap {
-        map: Box::new(
-            [[MapTile {
-                terrain: TerrainType::Ground,
-                entity: None,
-            }; WORLD_WIDTH]; WORLD_HEIGHT],
-        ),
+        map: vec![
+            vec![
+                MapTile {
+                    terrain: TerrainType::Ground,
+                    entity: None,
+                };
+                WORLD_WIDTH
+            ];
+            WORLD_HEIGHT
+        ],
     };
     commands.spawn(initial_map);
 }
 
-const WORLD_HEIGHT: usize = 120;
-const WORLD_WIDTH: usize = 120;
+const WORLD_HEIGHT: usize = 1000;
+const WORLD_WIDTH: usize = 1000;
 
 #[derive(Clone, Copy)]
 pub struct MapTile {
@@ -45,7 +49,7 @@ pub struct MapTile {
 
 #[derive(Component)]
 pub struct WorldMap {
-    pub map: Box<[[MapTile; WORLD_WIDTH]; WORLD_HEIGHT]>,
+    pub map: Vec<Vec<MapTile>>,
 }
 
 //for now only set the top left and what the camera can view will be detemined by the size of the
