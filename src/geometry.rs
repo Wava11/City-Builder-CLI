@@ -8,8 +8,8 @@ pub fn rectangles_intersect(
 ) -> bool {
     top_left1.x < bottom_right2.x
         && bottom_right1.x > top_left2.x
-        && top_left1.y > bottom_right2.y
-        && bottom_right1.y < top_left2.y
+        && top_left1.y < bottom_right2.y
+        && bottom_right1.y > top_left2.y
 }
 
 pub fn rectangle_contains_point(top_left: &Point, bottom_right: &Point, point: &Point) -> bool {
@@ -19,7 +19,7 @@ pub fn rectangle_contains_point(top_left: &Point, bottom_right: &Point, point: &
         && point.y <= bottom_right.y
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Point {
     pub x: usize,
     pub y: usize,

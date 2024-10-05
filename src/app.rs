@@ -1,4 +1,10 @@
+use std::io::stdout;
+
 use bevy::{ecs::system::SystemId, prelude::*};
+use crossterm::{
+    terminal::{Clear, ClearType},
+    ExecutableCommand,
+};
 
 use crate::tui::Terminal;
 
@@ -23,7 +29,8 @@ impl FromWorld for OneShotSystems {
     }
 }
 
-fn exit_game(mut writer: EventWriter<bevy::app::AppExit>, mut terminal: ResMut<Terminal>) {
-    let _ = terminal.0.clear();
+fn exit_game(mut writer: EventWriter<bevy::app::AppExit>) {
+    let mut stdout = stdout();
+    let _ = stdout.execute(Clear(ClearType::All));
     writer.send(bevy::app::AppExit);
 }

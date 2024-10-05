@@ -23,7 +23,7 @@ impl KeysPressed {
 
 fn change_pressed_keys(mut keys_pressed: ResMut<KeysPressed>) {
     keys_pressed.0.clear();
-    if event::poll(Duration::from_secs(0)).unwrap() {
+    while event::poll(Duration::from_secs(0)).unwrap() {
         if let event::Event::Key(key) = event::read().unwrap() {
             if key.kind == event::KeyEventKind::Press {
                 keys_pressed.0.push(key.code);

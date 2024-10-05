@@ -1,6 +1,6 @@
 use crate::{
     geometry::{rectangle_contains_point, rectangles_intersect, Point},
-    world::Camera,
+    world::{structure::Pathway, Camera},
 };
 use bevy::prelude::*;
 use ratatui::{buffer::Buffer, widgets::WidgetRef};
@@ -8,7 +8,7 @@ use ratatui::{buffer::Buffer, widgets::WidgetRef};
 use crate::{
     map::Position,
     world::{
-        structure::{Building, Pathway, Structure},
+        structure::{Building, Structure},
         Area, Rotation, WorldMap,
     },
 };
@@ -133,7 +133,7 @@ impl Pathway {
         };
         let mut result: Vec<Vec<char>> = Vec::with_capacity(area.width);
         for x in 0..area.width {
-            result[x] = Vec::with_capacity(area.height);
+            result.push(Vec::with_capacity(area.height));
             for _ in 0..area.height {
                 result[x].push(c);
             }
