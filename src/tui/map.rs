@@ -1,6 +1,6 @@
 use crate::{
     geometry::{rectangle_contains_point, rectangles_intersect, Point},
-    world::{structure::Pathway, Camera},
+    world::{camera::Camera, structure::Pathway},
 };
 use bevy::prelude::*;
 use ratatui::{buffer::Buffer, widgets::WidgetRef};
@@ -38,6 +38,7 @@ pub fn create_map_view_sprite(
     mut commands: Commands,
 ) {
     let camera = camera_query.single();
+
     let terminal_size = terminal.0.size().unwrap();
 
     let camera_bottom_right = Point {
@@ -77,10 +78,19 @@ pub fn create_map_view_sprite(
         let sprite = structure.to_sprite(area, rotation);
         for (y, sprite_row) in sprite.iter().enumerate() {
             for (x, sprite_cell) in sprite_row.iter().enumerate() {
-                if rectangle_contains_point(&camera.top_left, &camera_bottom_right, &Point { x, y })
-                {
-                    map_view_sprite[entity_top_left.0.y + y - camera.top_left.y]
-                        [entity_top_left.0.x + x - camera.top_left.x] = *sprite_cell;
+                let absolute_x = entity_top_left.0.x + x;
+                let absolute_y = entity_top_left.0.y + y;
+
+                if rectangle_contains_point(
+                    &camera.top_left,
+                    &camera_bottom_right,
+                    &Point {
+                        x: absolute_x,
+                        y: absolute_y,
+                    },
+                ) {
+                    map_view_sprite[absolute_y - camera.top_left.y]
+                        [absolute_x - camera.top_left.x] = *sprite_cell;
                 }
             }
         }
