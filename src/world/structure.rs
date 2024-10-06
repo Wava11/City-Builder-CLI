@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::map::Position;
 
-use super::{Area, Rotation};
+use super::{zone::Zone, Area, Rotation};
 
 pub struct StructurePlugin;
 
@@ -12,6 +12,7 @@ impl Plugin for StructurePlugin {
             .add_systems(Update, place_structures);
     }
 }
+
 
 #[derive(Component, Clone)]
 pub enum Structure {
@@ -27,12 +28,11 @@ pub struct StructureBundle {
     pub rotation: Rotation,
 }
 
+
+
 #[derive(Clone)]
 pub enum Building {
-    Residential,
-    Commerce,
-    Office,
-    Industry,
+    Zoned(Zone),
 }
 
 #[derive(Clone)]

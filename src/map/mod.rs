@@ -29,3 +29,9 @@ impl Add<Position> for Position {
         Position(self.0 + rhs.0)
     }
 }
+
+#[derive(Component)]
+pub struct Segment {
+    end_point: Point,
+    length: usize,
+}

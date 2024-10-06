@@ -1,15 +1,15 @@
 use crate::{
-    geometry::{rectangle_contains_point, rectangles_intersect, Point},
+    geometry::{Point},
     world::{structure::Pathway, Camera},
 };
 use bevy::prelude::*;
-use ratatui::{buffer::Buffer, widgets::WidgetRef};
+use ratatui::{buffer::Buffer, style::{Color, Style}, widgets::WidgetRef};
 
 use crate::{
     map::Position,
     world::{
         structure::{Building, Structure},
-        Area, Rotation, WorldMap,
+        zone, Area, Rotation, WorldMap,
     },
 };
 
@@ -24,6 +24,7 @@ impl WidgetRef for &MapView {
             //this might crash if the area ratatui asks for is larger that what was rendered
             let line_text: String = self.0[i as usize].iter().collect();
             let line = ratatui::prelude::Line::from(line_text);
+            buf.set_style(area, Style::default().fg(Color::DarkGray));
             buf.set_line(area.x, area.y + i, &line, area.width);
         }
     }
@@ -108,10 +109,10 @@ impl Structure {
 impl Building {
     fn to_sprite(&self, area: &Area, _rotation: &Rotation) -> Vec<Vec<char>> {
         let c = match self {
-            Building::Commerce => '$',
-            Building::Residential => '@',
-            Building::Office => '%',
-            Building::Industry => '#',
+            Building::Zoned(zone::Zone::Commerce(_)) => '$',
+            Building::Zoned(zone::Zone::Residential(_)) => '@',
+            Building::Zoned(zone::Zone::Office(_)) => '%',
+            Building::Zoned(zone::Zone::Industry(_)) => '#',
         };
         let mut result: Vec<Vec<char>> = Vec::with_capacity(area.width);
         for x in 0..area.width {

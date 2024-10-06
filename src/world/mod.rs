@@ -6,6 +6,8 @@ use crate::geometry::Point;
 
 pub mod structure;
 pub mod terrain;
+pub mod zone;
+pub mod pathway;
 
 pub struct WorldPlugin;
 
