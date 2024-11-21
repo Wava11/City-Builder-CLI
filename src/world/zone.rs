@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    geometry::{rectangle::Rectangle, rectangles_intersect, segment_intersects_rectangle, Point},
+    geometry::{rectangle::Rectangle, Point},
     map::{Position, Segment},
 };
 

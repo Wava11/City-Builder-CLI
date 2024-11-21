@@ -1,6 +1,6 @@
 use crate::{
     geometry::{Point},
-    world::{structure::Pathway, Camera},
+    world::{structure::Pathway, camera::Camera},
 };
 use bevy::prelude::*;
 use ratatui::{buffer::Buffer, style::{Color, Style}, widgets::WidgetRef};
@@ -33,7 +33,7 @@ impl WidgetRef for &MapView {
 pub fn create_map_view_sprite(
     terminal: Res<Terminal>,
     map_query: Query<&WorldMap>,
-    entities_query: Query<(&Structure, &Area, &Rotation, &Position)>,
+    structures_query: Query<(&Structure, &Area, &Rotation, &Position)>,
     camera_query: Query<&Camera>,
     mut map_view_query: Query<&mut MapView>,
     mut commands: Commands,
@@ -61,17 +61,17 @@ pub fn create_map_view_sprite(
         })
         .collect();
 
-    for (structure, area, rotation, entity_top_left) in entities_query.iter() {
-        let entity_bottom_right = Point {
-            x: entity_top_left.0.x + area.width,
-            y: entity_top_left.0.y + area.height,
+    for (structure, area, rotation, structure_top_left) in structures_query.iter() {
+        let structure_bottom_right = Point {
+            x: structure_top_left.0.x + area.width,
+            y: structure_top_left.0.y + area.height,
         };
 
         if !rectangles_intersect(
             &camera.top_left,
             &camera_bottom_right,
-            &entity_top_left.0,
-            &entity_bottom_right,
+            &structure_top_left.0,
+            &structure_bottom_right,
         ) {
             continue;
         }
@@ -79,8 +79,8 @@ pub fn create_map_view_sprite(
         let sprite = structure.to_sprite(area, rotation);
         for (y, sprite_row) in sprite.iter().enumerate() {
             for (x, sprite_cell) in sprite_row.iter().enumerate() {
-                let absolute_x = entity_top_left.0.x + x;
-                let absolute_y = entity_top_left.0.y + y;
+                let absolute_x = structure_top_left.0.x + x;
+                let absolute_y = structure_top_left.0.y + y;
 
                 if rectangle_contains_point(
                     &camera.top_left,

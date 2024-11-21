@@ -1,4 +1,4 @@
-use ratatui::layout::Rect
+use ratatui::layout::Rect;
 #[cfg(test)]
 mod subtract {
 
