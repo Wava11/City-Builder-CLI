@@ -3,7 +3,7 @@ use crate::world::Area;
 use super::Point;
 mod test;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone)]
 pub struct Rectangle {
     pub top_left: Point,
     pub bottom_right: Point,
@@ -69,7 +69,41 @@ impl Rectangle {
         }
     }
 
-    pub fn subtract(&self, zone_rectangle: &Rectangle) -> Vec<Rectangle> {
-        todo!()
+    pub fn subtract(&self, other: &Rectangle) -> Vec<Rectangle> {
+        if self.intersects(other) {
+            let interval_above_other = (0, other.top_left.y);
+            let interval_below_other = (other.bottom_right.y, usize::MAX);
+
+            let self_y_interval = (self.top_left.y, self.bottom_right.y);
+
+            let above_other_and_intersects_self = (
+                usize::max(self_y_interval.0, interval_above_other.0),
+                usize::min(self_y_interval.1, interval_above_other.1),
+            );
+            let below_other_and_intersects_self = (
+                usize::max(self_y_interval.0, interval_below_other.0),
+                usize::min(self_y_interval.1, interval_below_other.1),
+            );
+
+            let mut result: Vec<Rectangle> = vec![];
+            if above_other_and_intersects_self.0 < above_other_and_intersects_self.1 {
+                result.push(Rectangle {
+                    top_left: self.top_left.clone(),
+                    bottom_right: Point {
+                        x: self.bottom_right.x,
+                        y: above_other_and_intersects_self.1,
+                    },
+                })
+            }
+            if below_other_and_intersects_self.0 < below_other_and_intersects_self.1 {
+                result.push(Rectangle {
+                    top_left: Point {x: self.top_left.x, y: below_other_and_intersects_self.0},
+                    bottom_right: self.bottom_right.clone()
+                })
+            }
+
+            return result;
+        }
+        vec![self.clone()]
     }
 }

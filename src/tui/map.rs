@@ -1,9 +1,15 @@
+use std::clone;
+
 use crate::{
-    geometry::{Point},
-    world::{structure::Pathway, camera::Camera},
+    geometry::{rectangle::Rectangle, Point},
+    world::{camera::Camera, structure::Pathway},
 };
 use bevy::prelude::*;
-use ratatui::{buffer::Buffer, style::{Color, Style}, widgets::WidgetRef};
+use ratatui::{
+    buffer::Buffer,
+    style::{Color, Style},
+    widgets::WidgetRef,
+};
 
 use crate::{
     map::Position,
@@ -61,37 +67,36 @@ pub fn create_map_view_sprite(
         })
         .collect();
 
-    for (structure, area, rotation, structure_top_left) in structures_query.iter() {
+    let camera_view_rectangle = Rectangle {
+        bottom_right: camera_bottom_right,
+        top_left: camera.top_left.clone(),
+    };
+
+    for (structure, area, rotation, Position(structure_top_left)) in structures_query.iter() {
         let structure_bottom_right = Point {
-            x: structure_top_left.0.x + area.width,
-            y: structure_top_left.0.y + area.height,
+            x: structure_top_left.x + area.width,
+            y: structure_top_left.y + area.height,
+        };
+        let structure_rectangle = Rectangle {
+            bottom_right: structure_bottom_right,
+            top_left: structure_top_left.clone(),
         };
 
-        if !rectangles_intersect(
-            &camera.top_left,
-            &camera_bottom_right,
-            &structure_top_left.0,
-            &structure_bottom_right,
-        ) {
+        if !camera_view_rectangle.intersects(&structure_rectangle) {
             continue;
         }
 
         let sprite = structure.to_sprite(area, rotation);
         for (y, sprite_row) in sprite.iter().enumerate() {
             for (x, sprite_cell) in sprite_row.iter().enumerate() {
-                let absolute_x = structure_top_left.0.x + x;
-                let absolute_y = structure_top_left.0.y + y;
+                let absolute_sprite_pixel_point = Point {
+                    x: structure_top_left.x + x,
+                    y: structure_top_left.y + y,
+                };
 
-                if rectangle_contains_point(
-                    &camera.top_left,
-                    &camera_bottom_right,
-                    &Point {
-                        x: absolute_x,
-                        y: absolute_y,
-                    },
-                ) {
-                    map_view_sprite[absolute_y - camera.top_left.y]
-                        [absolute_x - camera.top_left.x] = *sprite_cell;
+                if camera_view_rectangle.contains_point(&absolute_sprite_pixel_point) {
+                    map_view_sprite[absolute_sprite_pixel_point.y - camera.top_left.y]
+                        [absolute_sprite_pixel_point.x - camera.top_left.x] = *sprite_cell;
                 }
             }
         }
