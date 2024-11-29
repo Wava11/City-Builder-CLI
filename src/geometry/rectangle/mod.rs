@@ -1,20 +1,17 @@
 use crate::world::Area;
 
-use super::Point;
+use super::{interval::Interval, Point};
 mod test;
 
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone, PartialOrd, Ord)]
 pub struct Rectangle {
     pub top_left: Point,
     pub bottom_right: Point,
 }
 
 impl Rectangle {
-    pub fn from_coordinates(
-        (left, top): (usize, usize),
-        (right, bottom): (usize, usize),
-    ) -> Rectangle {
-        Rectangle {
+    pub fn from_coordinates((left, top): (usize, usize), (right, bottom): (usize, usize)) -> Self {
+        Self {
             top_left: Point { x: left, y: top },
             bottom_right: Point {
                 x: right,
@@ -22,8 +19,8 @@ impl Rectangle {
             },
         }
     }
-    pub fn from_top_left_and_area(top_left: &Point, area: &Area) -> Rectangle {
-        Rectangle {
+    pub fn from_top_left_and_area(top_left: &Point, area: &Area) -> Self {
+        Self {
             bottom_right: Point {
                 x: top_left.x + area.width,
                 y: top_left.y + area.height,
@@ -31,6 +28,16 @@ impl Rectangle {
             top_left: top_left.clone(),
         }
     }
+    fn from_intervals(x: &Interval, y: &Interval) -> Self {
+        Self {
+            top_left: Point {
+                x: x.start,
+                y: y.start,
+            },
+            bottom_right: Point { x: x.end, y: y.end },
+        }
+    }
+
     pub fn to_area(&self) -> Area {
         Area {
             width: self.bottom_right.x - self.top_left.x,
@@ -43,6 +50,16 @@ impl Rectangle {
             && self.bottom_right.x > other.top_left.x
             && self.top_left.y < other.bottom_right.y
             && self.bottom_right.y > other.top_left.y
+    }
+    fn intersection(&self, other: &Self) -> Option<Self> {
+        let x_intersection = self.x_interval().intersection(&other.x_interval());
+        let y_intersection = self.y_interval().intersection(&other.y_interval());
+        match (x_intersection, y_intersection) {
+            (Some(x_intersection), Some(y_intersection)) => {
+                Some(Rectangle::from_intervals(&x_intersection, &y_intersection))
+            }
+            _ => None,
+        }
     }
 
     pub fn contains_point(&self, point: &Point) -> bool {
@@ -69,41 +86,61 @@ impl Rectangle {
         }
     }
 
-    pub fn subtract(&self, other: &Rectangle) -> Vec<Rectangle> {
-        if self.intersects(other) {
-            let interval_above_other = (0, other.top_left.y);
-            let interval_below_other = (other.bottom_right.y, usize::MAX);
+    fn top(&self) -> usize {
+        self.top_left.y
+    }
+    fn right(&self) -> usize {
+        self.bottom_right.x
+    }
+    fn bottom(&self) -> usize {
+        self.bottom_right.y
+    }
+    fn left(&self) -> usize {
+        self.top_left.x
+    }
 
-            let self_y_interval = (self.top_left.y, self.bottom_right.y);
-
-            let above_other_and_intersects_self = (
-                usize::max(self_y_interval.0, interval_above_other.0),
-                usize::min(self_y_interval.1, interval_above_other.1),
-            );
-            let below_other_and_intersects_self = (
-                usize::max(self_y_interval.0, interval_below_other.0),
-                usize::min(self_y_interval.1, interval_below_other.1),
-            );
-
-            let mut result: Vec<Rectangle> = vec![];
-            if above_other_and_intersects_self.0 < above_other_and_intersects_self.1 {
-                result.push(Rectangle {
-                    top_left: self.top_left.clone(),
-                    bottom_right: Point {
-                        x: self.bottom_right.x,
-                        y: above_other_and_intersects_self.1,
-                    },
-                })
-            }
-            if below_other_and_intersects_self.0 < below_other_and_intersects_self.1 {
-                result.push(Rectangle {
-                    top_left: Point {x: self.top_left.x, y: below_other_and_intersects_self.0},
-                    bottom_right: self.bottom_right.clone()
-                })
-            }
-
-            return result;
+    fn complement(&self) -> Vec<Self> {
+        let mut result: Vec<Self> = Vec::with_capacity(4);
+        if self.top() > 0 {
+            result.push(Self::from_intervals(
+                &Interval::MAX,
+                &Interval::new(0, self.top() - 1),
+            ));
         }
-        vec![self.clone()]
+        if self.right() < usize::MAX {
+            result.push(Self::from_intervals(
+                &Interval::new(self.right() + 1, usize::MAX),
+                &self.y_interval(),
+            ));
+        }
+        if self.bottom() < usize::MAX {
+            result.push(Self::from_intervals(
+                &Interval::MAX,
+                &Interval::new(self.bottom() + 1, usize::MAX),
+            ));
+        }
+        if self.left() > 0 {
+            result.push(Self::from_intervals(
+                &Interval::new(0, self.left() - 1),
+                &self.y_interval(),
+            ));
+        }
+
+        result
+    }
+
+    pub fn subtract(&self, other: &Rectangle) -> Vec<Rectangle> {
+        other
+            .complement()
+            .into_iter()
+            .filter_map(|other_complement| self.intersection(&other_complement))
+            .collect()
+    }
+
+    fn x_interval(&self) -> Interval {
+        Interval::new(self.top_left.x, self.bottom_right.x)
+    }
+    fn y_interval(&self) -> Interval {
+        Interval::new(self.top_left.y, self.bottom_right.y)
     }
 }

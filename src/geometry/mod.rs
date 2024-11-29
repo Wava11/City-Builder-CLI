@@ -4,6 +4,7 @@ use ratatui::layout::Rect;
 
 use crate::map::Segment;
 
+pub mod interval;
 pub mod rectangle;
 
 //TODO: I know this doesn't really make geometric sense but it worked for cursor so probably just
@@ -15,7 +16,7 @@ pub fn rect_contains_coords(rect: Rect, x: isize, y: isize) -> bool {
         && y < rect.bottom() as isize
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
